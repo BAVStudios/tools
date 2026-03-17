@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BAVS Creative Guide</title>
+<style>
+  :root {
+    --bg: #060623; --card: #0C0C24; --card-border: rgba(108,92,231,0.2);
+    --text: #C8CCD4; --text-dim: #9CA3AF; --text-white: #fff;
+    --cyan: #00FDFF; --folly: #FF0A45; --indigo: #6C5CE7; --lavender: #A29BFE;
+    --green: #00FF88; --amber: #FBBF24;
+    --input-bg: #1a1a3e; --input-border: rgba(108,92,231,0.25);
+    --example-bg: #111133; --example-border: rgba(108,92,231,0.15);
+  }
+  [data-theme="light"] {
+    --bg: #F5F5F7; --card: #FFFFFF; --card-border: #E0E0E0;
+    --text: #444; --text-dim: #777; --text-white: #111;
+    --cyan: #0077AA; --folly: #D90038; --indigo: #5A4CC2; --lavender: #7B6FD4;
+    --green: #00884D; --amber: #B8860B;
+    --input-bg: #F0F0F5; --input-border: #CCC;
+    --example-bg: #F0F0F5; --example-border: #DDD;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 32px 40px; transition: background 0.2s, color 0.2s; }
+  .header { display: flex; align-items: center; margin-bottom: 24px; }
+  .header img { height: 28px; margin-right: 16px; }
+  .header h1 { color: var(--text-white); font-size: 28px; flex: 1; }
+  .theme-toggle { background: var(--card); border: 1px solid var(--card-border); color: var(--text-dim); padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.15s; }
+  .theme-toggle:hover { border-color: var(--indigo); color: var(--text-white); }
+  .subtitle { color: var(--text-dim); font-size: 15px; margin-bottom: 24px; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 28px; }
+  .tab { background: var(--card); border: 1px solid var(--card-border); color: var(--lavender); padding: 10px 20px; border-radius: 10px; cursor: pointer; font-size: 15px; font-weight: 600; transition: all 0.15s; }
+  .tab:hover { border-color: var(--indigo); color: var(--text-white); }
+  .tab.active { border-color: var(--cyan); color: var(--cyan); }
+  .page { display: none; max-width: 860px; }
+  .page.active { display: block; animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .section { background: var(--card); border: 1px solid var(--card-border); border-radius: 14px; padding: 24px; margin-bottom: 16px; }
+  .section h2 { color: var(--text-white); font-size: 18px; margin-bottom: 12px; }
+  .section h3 { color: var(--text-white); font-size: 16px; margin-bottom: 8px; margin-top: 16px; }
+  .section p, .section li { font-size: 15px; line-height: 1.7; }
+  .section ul, .section ol { padding-left: 20px; margin-top: 6px; }
+  .section li { margin-bottom: 4px; }
+  .name-format { background: var(--input-bg); border-radius: 10px; padding: 16px 20px; margin: 12px 0; font-family: 'SF Mono','Fira Code',monospace; font-size: 15px; color: var(--cyan); line-height: 1.6; white-space: pre-line; }
+  .example { background: var(--example-bg); border: 1px solid var(--example-border); border-radius: 10px; padding: 14px 18px; margin: 10px 0; font-family: 'SF Mono','Fira Code',monospace; font-size: 13px; color: var(--text); line-height: 1.8; white-space: pre-line; }
+  .hl { color: var(--cyan); }
+  .field-table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  .field-table th { text-align: left; color: var(--folly); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; padding: 8px 12px; border-bottom: 1px solid var(--card-border); }
+  .field-table td { padding: 10px 12px; font-size: 14px; border-bottom: 1px solid var(--card-border); vertical-align: top; }
+  .field-table td:first-child { color: var(--cyan); font-weight: 600; white-space: nowrap; }
+  .callout { border-radius: 10px; padding: 16px 20px; margin: 14px 0; font-size: 14px; line-height: 1.7; }
+  .callout-warn { background: rgba(255,10,69,0.08); border: 1px solid rgba(255,10,69,0.25); }
+  .callout-rule { background: rgba(0,253,255,0.06); border: 1px solid rgba(0,253,255,0.2); }
+  .callout-tip { background: rgba(0,255,136,0.06); border: 1px solid rgba(0,255,136,0.2); }
+  .callout-title { font-weight: 700; margin-bottom: 6px; }
+  .callout-warn .callout-title { color: var(--folly); }
+  .callout-rule .callout-title { color: var(--cyan); }
+  .callout-tip .callout-title { color: var(--green); }
+  .callout ul { padding-left: 20px; margin-top: 6px; }
+  .callout li { margin-bottom: 4px; }
+  .quota-card { background: var(--card); border: 1px solid var(--card-border); border-radius: 14px; padding: 20px; margin-bottom: 12px; }
+  .quota-card h3 { color: var(--text-white); font-size: 16px; margin-bottom: 8px; }
+  .quota-card .quota-num { color: var(--cyan); font-size: 22px; font-weight: 700; }
+  .quota-card .quota-detail { color: var(--text-dim); font-size: 14px; margin-top: 4px; }
+  .quota-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .status-active { color: var(--green); }
+  .status-paused { color: var(--amber); }
+  .calc { background: var(--card); border: 1px solid rgba(0,253,255,0.25); border-radius: 14px; padding: 24px; margin-bottom: 16px; }
+  .calc h2 { color: var(--cyan); font-size: 18px; margin-bottom: 16px; }
+  .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .calc-field { display: flex; flex-direction: column; gap: 4px; }
+  .calc-field label { color: var(--text-dim); font-size: 12px; font-weight: 600; text-transform: uppercase; }
+  .calc-field input, .calc-field select { background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 8px; padding: 10px 14px; color: var(--text-white); font-size: 14px; font-family: inherit; outline: none; }
+  .calc-field input:focus, .calc-field select:focus { border-color: var(--indigo); }
+  .calc-output { margin-top: 16px; padding: 16px; background: var(--input-bg); border: 1px solid rgba(0,253,255,0.3); border-radius: 10px; }
+  .calc-output .big { color: var(--cyan); font-size: 28px; font-weight: 700; }
+  .calc-output .detail { color: var(--text-dim); font-size: 13px; margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iTGF5ZXJfMSIgZGF0YS1uYW1lPSJMYXllciAxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1ODcuOTQgNDIxLjMzIj4KICA8ZGVmcz4KICAgIDxzdHlsZT4KICAgICAgLmNscy0xIHsKICAgICAgICBmaWxsOiAjZmQwMTNkOwogICAgICB9CiAgICA8L3N0eWxlPgogIDwvZGVmcz4KICA8cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik01NDAuMDMsMjE4Ljk5bC0xMS41NC04LjA1YzUuNy0xMC45Nyw4Ljk3LTIzLjQsOC45Ny0zNi42MiwwLTI2LjIxLTEyLjktNTAuNzMtMzQuNDktNjUuNTlMMzY1LjgxLDE0LjM4Yy0xMy40MS05LjM2LTI5LjM2LTE0LjM4LTQ1LjcyLTE0LjM4SDgwLjgzQzM2LjczLDAsLjk4LDM1Ljc1Ljk4LDc5Ljg0bC4wMiwzNDEuNDljMCwuMzcsNDc1LjE4LjY3LDQ3NS4xOC42NywxMDkuMTMsMCwxNTMuMzMtMTQwLjU0LDYzLjg0LTIwMy4wMVpNMTIxLjU1LDEzNy4wOGMwLTQyLjQxLDM0LjU0LTc2LjgsNzcuMTQtNzYuOGgxMDIuNjdsMTczLjUsMTIwLjU3aC0xMjAuNjVsLTEzNC05My40MXY5My40MWgtOTguNjZ2LTQzLjc3Wk00NzguNzgsMjg0LjQ0YzAsNDIuNjctMzQuNzUsNzcuMjctNzcuNjEsNzcuMjdoLTEwNi4xMmwtMTczLjUtMTIwLjU3aDEyMS4zOWwxMzMuNzYsOTMuMjV2LTkzLjI1aDEwMi4wOXY0My4zWiIvPgo8L3N2Zz4=" alt="BAVS">
+  <h1>Creative Guide</h1>
+  <button class="theme-toggle" onclick="toggleTheme()">Light Mode</button>
+</div>
+<p class="subtitle">XcYv system, file naming, formats, and monthly content targets per client.</p>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('xcyv')">XcYv System</div>
+  <div class="tab" onclick="switchTab('files')">File Naming</div>
+  <div class="tab" onclick="switchTab('targets')">Monthly Targets</div>
+</div>
+
+<!-- ==================== XcYv ==================== -->
+<div id="page-xcyv" class="page active">
+
+  <div class="section">
+    <h2>What is XcYv?</h2>
+    <p>XcYv is how we describe how many creatives to produce. It stands for <strong>X concepts, Y variations</strong>.</p>
+    <ul>
+      <li><strong>Concept</strong> = a unique creative idea, angle, or message. Each concept gets its own series letter (A, B, C...)</li>
+      <li><strong>Variation</strong> = different versions of the same concept. Same idea, different execution (different headline, different image, different layout). Each variation gets a number (01, 02, 03...)</li>
+    </ul>
+    <div class="callout callout-rule">
+      <div class="callout-title">Example: 3c3v</div>
+      <p>3 concepts x 3 variations = <strong>9 unique creatives</strong></p>
+      <div class="example">Concept A: 3 variations = A_01, A_02, A_03
+Concept B: 3 variations = B_01, B_02, B_03
+Concept C: 3 variations = C_01, C_02, C_03
+Total: 9 creatives</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Formats: Feed and Story</h2>
+    <p>Most creatives need to be produced in <strong>two formats</strong>:</p>
+    <table class="field-table">
+      <tr><th>Format</th><th>Suffix</th><th>Aspect ratio</th><th>Where it shows</th></tr>
+      <tr><td>Feed</td><td><code>-F</code></td><td>1:1 or 4:5</td><td>Facebook/Instagram feed, right column</td></tr>
+      <tr><td>Story</td><td><code>-S</code></td><td>9:16 (vertical)</td><td>Stories, Reels, full-screen placements</td></tr>
+    </table>
+    <div class="callout callout-warn">
+      <div class="callout-title">This doubles the file count</div>
+      <p>3c3v = 9 creatives. Each in Feed AND Story = <strong>18 files total</strong>.</p>
+      <p>Always check: if there's a <code>-F</code> version, there should be a <code>-S</code> version too.</p>
+    </div>
+  </div>
+
+  <!-- Calculator -->
+  <div class="calc">
+    <h2>XcYv Calculator</h2>
+    <div class="calc-grid">
+      <div class="calc-field">
+        <label>Concepts (X)</label>
+        <input type="number" id="xcyv-c" min="1" max="20" value="3" oninput="calcXcYv()">
+      </div>
+      <div class="calc-field">
+        <label>Variations (Y)</label>
+        <input type="number" id="xcyv-v" min="1" max="20" value="3" oninput="calcXcYv()">
+      </div>
+    </div>
+    <div class="calc-output">
+      <div class="big" id="xcyv-result">3c3v = 9 creatives (18 files with F+S)</div>
+      <div class="detail" id="xcyv-detail">3 ad sets in Meta (one per concept) x 3 ads each = 9 ads minimum</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>How XcYv Maps to Meta Ads Manager</h2>
+    <p>Each concept becomes its own ad set. Each variation becomes an ad inside that ad set.</p>
+    <div class="example">3c3v for Bronze Era, March 2026:
+
+<span class="hl">Ad Set: 603A || IMG || BROAD</span>
+  Ad: 603A_01_IMG_Skincare Undone-F.png
+  Ad: 603A_02_IMG_Skincare Undone-F.png
+  Ad: 603A_03_IMG_Skincare Undone-F.png
+
+<span class="hl">Ad Set: 603B || IMG || BROAD</span>
+  Ad: 603B_01_IMG_Breakout Tax-F.png
+  Ad: 603B_02_IMG_Breakout Tax-F.png
+  Ad: 603B_03_IMG_Breakout Tax-F.png
+
+<span class="hl">Ad Set: 603C || IMG || BROAD</span>
+  Ad: 603C_01_IMG_Watermelon-F.png
+  Ad: 603C_02_IMG_Watermelon-F.png
+  Ad: 603C_03_IMG_Watermelon-F.png</div>
+  </div>
+
+  <div class="section">
+    <h2>Courtesy Creatives</h2>
+    <p>Sometimes we produce extra creatives outside the regular monthly quota. This happens when:</p>
+    <ul>
+      <li><strong>Underperformance</strong> - ads aren't hitting targets, we need fresh creative to test</li>
+      <li><strong>Promotions</strong> - a client runs a sale, launch, or seasonal event that needs dedicated creatives</li>
+      <li><strong>Opportunities</strong> - something timely (trending moment, competitor gap) worth jumping on</li>
+    </ul>
+    <p style="margin-top:8px">These are produced as a courtesy on top of the regular quota. They follow the same naming convention and upload process.</p>
+  </div>
+</div>
+
+<!-- ==================== FILE NAMING ==================== -->
+<div id="page-files" class="page">
+
+  <div class="section">
+    <h2>Creative File Name Format</h2>
+    <p style="margin-bottom:12px">Every creative file from Raka follows this pattern:</p>
+    <div class="name-format">{Y}{MM}{C}_{VARIATION}_{FORMAT}_{TITLE}-{RATIO}.ext</div>
+    <table class="field-table">
+      <tr><th>Part</th><th>What it means</th><th>Examples</th></tr>
+      <tr><td>Y</td><td>Last digit of the year</td><td><code>6</code> = 2026, <code>5</code> = 2025</td></tr>
+      <tr><td>MM</td><td>Month (01-12)</td><td><code>03</code> = March, <code>11</code> = November</td></tr>
+      <tr><td>C</td><td>Concept letter</td><td><code>A</code> = concept 1, <code>B</code> = concept 2, <code>C</code> = concept 3</td></tr>
+      <tr><td>VARIATION</td><td>Variation number within that concept</td><td><code>01</code>, <code>02</code>, <code>03</code></td></tr>
+      <tr><td>FORMAT</td><td>Content type</td><td><code>IMG</code> (static), <code>UGC</code>, <code>EGC</code>, <code>VID</code>, <code>EDM</code></td></tr>
+      <tr><td>TITLE</td><td>Descriptive name of the concept</td><td><code>Skincare Undone</code>, <code>Breakout Tax</code></td></tr>
+      <tr><td>-RATIO</td><td>Aspect ratio (no space before hyphen)</td><td><code>-S</code> = story (9:16), <code>-F</code> = feed (1:1/4:5)</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>Reading a File Name</h2>
+    <div class="example"><span class="hl">603A</span>_<span class="hl">01</span>_<span class="hl">IMG</span>_<span class="hl">Skincare Undone</span><span class="hl">-S</span>.png
+
+603   = 2026, March
+A     = concept A (first concept)
+01    = variation 1
+IMG   = static image
+Skincare Undone = concept name
+-S    = story format (9:16)</div>
+    <p style="margin-top:12px">The <strong>YMMC</strong> part (<code>603A</code>) tells you which ad set this file belongs to in Meta Ads Manager.</p>
+  </div>
+
+  <div class="section">
+    <h2>Where Files Live</h2>
+    <p>Creative files are stored in Google Drive:</p>
+    <div class="example">10 BAVS Clients > [Client Name] > 01 Ads/</div>
+    <ul style="margin-top:12px">
+      <li>Files are organized by client</li>
+      <li>Every file should be identifiable on its own - you shouldn't need the folder path to understand what it is</li>
+      <li>If a <code>-S</code> version exists, there should be a <code>-F</code> version too</li>
+    </ul>
+  </div>
+
+  <div class="callout callout-tip">
+    <div class="callout-title">Quick decode</div>
+    <ul>
+      <li>First 3 characters = when (year + month)</li>
+      <li>Letter after that = which concept</li>
+      <li>Number after underscore = which variation</li>
+      <li>Last letter before .ext = which format (-S or -F)</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ==================== MONTHLY TARGETS ==================== -->
+<div id="page-targets" class="page">
+
+  <div class="section">
+    <h2>Monthly Creative Quotas</h2>
+    <p>Each active client has a set number of creatives we produce per month. These come from the Creative Director pipeline and are produced by Raka.</p>
+  </div>
+
+  <div class="quota-grid">
+    <div class="quota-card">
+      <h3>R006 - Regan Hillyer <span class="status-active">Active</span></h3>
+      <div class="quota-num">8c3v images</div>
+      <div class="quota-detail">+ 6 UGC scripts/month</div>
+      <div class="quota-detail">= 24 unique images (48 files with F+S)</div>
+      <div class="quota-detail" style="margin-top:8px; color:var(--amber)">Highest volume client. Most of your upload work is here.</div>
+    </div>
+    <div class="quota-card">
+      <h3>R006 - Bronze Era <span class="status-active">Active</span></h3>
+      <div class="quota-num">3c3v images</div>
+      <div class="quota-detail">+ 2 UGC scripts/month</div>
+      <div class="quota-detail">= 9 unique images (18 files with F+S)</div>
+    </div>
+    <div class="quota-card">
+      <h3>R002 - Voir <span class="status-active">Active</span></h3>
+      <div class="quota-num">2c2v images</div>
+      <div class="quota-detail">+ 2 UGC scripts/month</div>
+      <div class="quota-detail">= 4 unique images (8 files with F+S)</div>
+    </div>
+    <div class="quota-card">
+      <h3>R014 - RugNRoll <span class="status-active">Active</span></h3>
+      <div class="quota-num">3c3v images</div>
+      <div class="quota-detail">+ 1 UGC script/month</div>
+      <div class="quota-detail">= 9 unique images (18 files with F+S)</div>
+    </div>
+    <div class="quota-card">
+      <h3>R004 - editGPT <span class="status-paused">Paused</span></h3>
+      <div class="quota-num">Paused</div>
+      <div class="quota-detail">Creative production on hold</div>
+    </div>
+    <div class="quota-card">
+      <h3>R016 - VCFO <span class="status-paused">N/A</span></h3>
+      <div class="quota-num">No Meta ads</div>
+      <div class="quota-detail">Google Ads + SEO only</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Your Job: Make Sure We Hit These</h2>
+    <ul>
+      <li><strong>Track progress in Asana</strong> - creative tasks are assigned to Raka. Check if they're on track early in the month, not at the end.</li>
+      <li><strong>Flag shortfalls early</strong> - if it's the 15th and a client is behind on their quota, raise it in #bav-training</li>
+      <li><strong>Count correctly</strong> - 3c3v = 9 unique creatives. Each in F + S = 18 files. Don't count file count as creative count.</li>
+      <li><strong>Promos are extra</strong> - promo creatives don't count toward the monthly quota. They're on top of it.</li>
+      <li><strong>Courtesy creatives are extra too</strong> - if we produce extra due to underperformance, that doesn't reduce next month's quota</li>
+    </ul>
+  </div>
+
+  <div class="callout callout-rule">
+    <div class="callout-title">Monthly checklist</div>
+    <ul>
+      <li>Week 1: Check Asana for creative tasks assigned this month. All clients covered?</li>
+      <li>Week 2: Check progress. Are designs started? Flag any blockers.</li>
+      <li>Week 3: Creatives should be arriving. Upload as they come in.</li>
+      <li>Week 4: Final check. Did every client get their quota? Log any gaps.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('page-' + tab).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function toggleTheme() {
+  const b = document.body, btn = document.querySelector('.theme-toggle');
+  if (b.dataset.theme === 'light') { b.removeAttribute('data-theme'); btn.textContent = 'Light Mode'; }
+  else { b.dataset.theme = 'light'; btn.textContent = 'Dark Mode'; }
+}
+function calcXcYv() {
+  const c = parseInt(document.getElementById('xcyv-c').value) || 0;
+  const v = parseInt(document.getElementById('xcyv-v').value) || 0;
+  const total = c * v;
+  const files = total * 2;
+  document.getElementById('xcyv-result').textContent = c + 'c' + v + 'v = ' + total + ' creatives (' + files + ' files with F+S)';
+  document.getElementById('xcyv-detail').textContent = c + ' ad sets in Meta (one per concept) x ' + v + ' ads each = ' + total + ' ads minimum';
+}
+</script>
+</body>
+</html>

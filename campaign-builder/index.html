@@ -63,6 +63,7 @@
   .tag-sc { background: rgba(0,255,136,0.12); color: var(--green); }
   .tag-at { background: rgba(0,253,255,0.12); color: var(--cyan); }
   .tag-na { background: rgba(251,191,36,0.15); color: var(--amber); }
+  .tag-pr { background: rgba(255,10,69,0.12); color: var(--folly); }
   .callout { border-radius: 10px; padding: 16px 20px; margin: 14px 0; font-size: 14px; line-height: 1.7; }
   .callout-warn { background: rgba(255,10,69,0.08); border: 1px solid rgba(255,10,69,0.25); }
   .callout-rule { background: rgba(0,253,255,0.06); border: 1px solid rgba(0,253,255,0.2); }
@@ -149,6 +150,7 @@
     <div class="path-btn" onclick="filterPath('sc',this)"><span class="tag tag-sc">SC</span> Scale</div>
     <div class="path-btn" onclick="filterPath('at',this)"><span class="tag tag-at">AT</span> Audience Test</div>
     <div class="path-btn" onclick="filterPath('na',this)"><span class="tag tag-na">NA</span> New Account</div>
+    <div class="path-btn" onclick="filterPath('pr',this)"><span class="tag tag-pr">PR</span> Promo</div>
   </div>
 
   <!-- Path-specific at top -->
@@ -172,6 +174,11 @@
     <h2><span class="tag tag-na">NA</span> New Account Campaign</h2>
     <ul><li>Budget: <strong>ABO</strong>, minimum $20 per ad set</li><li>Start as AUDIENCE TEST - find what works first, then branch into other paths</li></ul>
     <div class="example">[BAVS] CV || 01 || PUR || ABO || AUDIENCE TEST</div>
+  </div>
+  <div class="section path-content visible" data-path="pr">
+    <h2><span class="tag tag-pr">PR</span> Promo Campaign</h2>
+    <ul><li>Budget: <strong>ABO</strong></li><li>Set up like a Creative Test - but the asset group title in the ad set MUST be the promo name</li><li>Find the most recent CREATIVE TEST campaign, or create a new one</li></ul>
+    <div class="example">[BAVS] CV || 08 || PUR || ABO || CREATIVE TEST</div>
   </div>
 
   <!-- Builder -->
@@ -249,6 +256,7 @@ D. [BAVS] LD || 12 || WEB || CBO || CREATIVE TEST</div>
     <div class="path-btn" onclick="filterPath('sc',this)"><span class="tag tag-sc">SC</span> Scale</div>
     <div class="path-btn" onclick="filterPath('at',this)"><span class="tag tag-at">AT</span> Audience Test</div>
     <div class="path-btn" onclick="filterPath('na',this)"><span class="tag tag-na">NA</span> New Account</div>
+    <div class="path-btn" onclick="filterPath('pr',this)"><span class="tag tag-pr">PR</span> Promo</div>
   </div>
 
   <!-- Path-specific at top -->
@@ -278,6 +286,13 @@ AUD || IMG || US || RETARGET</div>
     <div class="example">AUD || IMG || BROAD
 AUD || IMG || LAA STACK
 AUD || IMG || INT: YOGA</div>
+  </div>
+
+    <div class="section path-content visible" data-path="pr">
+    <h2><span class="tag tag-pr">PR</span> Promo Ad Sets</h2>
+    <ul><li>Series = <strong>YMMC</strong> matching the creative batch (same as Creative Test)</li><li>Interest = <strong>BROAD</strong></li><li>Asset Group Title = <strong>the promo name</strong> (e.g. "EOFY SALE", "BLACK FRIDAY", "LAUNCH WEEK")</li></ul>
+    <div class="example">603A || IMG || US || BROAD || EOFY SALE
+603B || UGC || US || BROAD || BLACK FRIDAY</div>
   </div>
 
   <!-- Builder -->
@@ -347,6 +362,7 @@ AUD || IMG || INT: YOGA</div>
     <div class="path-btn" onclick="filterPath('sc',this)"><span class="tag tag-sc">SC</span> Scale</div>
     <div class="path-btn" onclick="filterPath('at',this)"><span class="tag tag-at">AT</span> Audience Test</div>
     <div class="path-btn" onclick="filterPath('na',this)"><span class="tag tag-na">NA</span> New Account</div>
+    <div class="path-btn" onclick="filterPath('pr',this)"><span class="tag tag-pr">PR</span> Promo</div>
   </div>
 
   <div class="callout callout-warn" style="margin-bottom:16px"><div class="callout-title">Minimum 3 ads per ad set. Always. No exceptions.</div>Meta needs at least 3 options to optimize delivery. If you have fewer than 3, flag it.</div>
@@ -367,6 +383,11 @@ AUD || IMG || INT: YOGA</div>
   <div class="section path-content visible" data-path="na">
     <h2><span class="tag tag-na">NA</span> New Account Ads</h2>
     <ul><li><strong>Mix concepts together</strong> - this is the one exception. We don't know what works yet.</li><li>Combine <code>603A</code> + <code>603B</code> + <code>603C</code> ads in the same ad set</li><li>Upload the files directly (no post IDs exist yet)</li><li>Minimum 3 ads per ad set</li></ul>
+  </div>
+
+    <div class="section path-content visible" data-path="pr">
+    <h2><span class="tag tag-pr">PR</span> Promo Ads</h2>
+    <ul><li>Same rules as Creative Test - upload from <strong>matching YMMC batch only</strong></li><li>Fresh upload, no post ID</li><li>The promo creatives should be specifically designed for the promotion</li><li>Minimum 3 ads per ad set</li></ul>
   </div>
 
   <!-- Reference -->
@@ -397,6 +418,7 @@ IMG  = static image
       <tr><td><span class="tag tag-sc">SC</span> Scale</td><td><strong>Use post ID</strong> - always. Keeps the social proof.</td></tr>
       <tr><td><span class="tag tag-at">AT</span> Audience Test</td><td><strong>Use post ID</strong> - always. Same ads in every ad set.</td></tr>
       <tr><td><span class="tag tag-na">NA</span> New Account</td><td><strong>Upload the files directly</strong> - no existing ads to reuse yet.</td></tr>
+      <tr><td><span class="tag tag-pr">PR</span> Promo</td><td><strong>Upload the files directly</strong> - promo-specific creatives.</td></tr>
     </table>
   </div>
 
@@ -476,8 +498,8 @@ function filterPath(path, btn) {
     page.querySelectorAll('.gated').forEach(el => el.classList.add('visible'));
   });
   // Auto-set agenda and budget on campaigns tab
-  const agendaMap = { ct: 'CREATIVE TEST', sc: 'SCALE', at: 'AUDIENCE TEST', na: 'AUDIENCE TEST' };
-  const budgetMap = { ct: 'ABO', sc: 'CBO', at: 'ABO', na: 'ABO' };
+  const agendaMap = { ct: 'CREATIVE TEST', sc: 'SCALE', at: 'AUDIENCE TEST', na: 'AUDIENCE TEST', pr: 'CREATIVE TEST' };
+  const budgetMap = { ct: 'ABO', sc: 'CBO', at: 'ABO', na: 'ABO', pr: 'ABO' };
   const agenda = document.getElementById('c-agenda');
   const budget = document.getElementById('c-budget');
   if (agenda && agendaMap[path]) { agenda.value = agendaMap[path]; buildCampaign(); }
@@ -485,7 +507,7 @@ function filterPath(path, btn) {
   // Auto-set adset series: AUD for everything except creative test
   const asSeries = document.getElementById('as-series');
   if (asSeries) {
-    if (path === 'ct') {
+    if (path === 'ct' || path === 'pr') {
       asSeries.value = ''; asSeries.readOnly = false; asSeries.classList.remove('locked');
       asSeries.placeholder = 'e.g. 603A, 507H';
     } else {
