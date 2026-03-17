@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BAVS Campaign Builder v2</title>
+<style>
+  :root {
+    --bg: #060623; --card: #0C0C24; --card-border: rgba(108,92,231,0.2);
+    --text: #C8CCD4; --text-dim: #9CA3AF; --text-white: #fff;
+    --cyan: #00FDFF; --folly: #FF0A45; --indigo: #6C5CE7; --lavender: #A29BFE;
+    --green: #00FF88; --amber: #FBBF24;
+    --input-bg: #1a1a3e; --input-border: rgba(108,92,231,0.25);
+    --example-bg: #111133; --example-border: rgba(108,92,231,0.15);
+  }
+  [data-theme="light"] {
+    --bg: #F5F5F7; --card: #FFFFFF; --card-border: #E0E0E0;
+    --text: #444; --text-dim: #777; --text-white: #111;
+    --cyan: #0077AA; --folly: #D90038; --indigo: #5A4CC2; --lavender: #7B6FD4;
+    --green: #00884D; --amber: #B8860B;
+    --input-bg: #F0F0F5; --input-border: #CCC;
+    --example-bg: #F0F0F5; --example-border: #DDD;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 32px 40px; transition: background 0.2s, color 0.2s; }
+  /* Header */
+  .header { display: flex; align-items: center; margin-bottom: 24px; }
+  .header img { height: 28px; margin-right: 16px; }
+  .header h1 { color: var(--text-white); font-size: 28px; flex: 1; }
+  .theme-toggle { background: var(--card); border: 1px solid var(--card-border); color: var(--text-dim); padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.15s; }
+  .theme-toggle:hover { border-color: var(--indigo); color: var(--text-white); }
+  .subtitle { color: var(--text-dim); font-size: 15px; margin-bottom: 24px; }
+  /* Tabs */
+  .tabs { display: flex; margin-bottom: 28px; }
+  .tabs-left { display: flex; gap: 8px; }
+  .tabs-right { margin-left: auto; }
+  .tab { background: var(--card); border: 1px solid var(--card-border); color: var(--lavender); padding: 10px 20px; border-radius: 10px; cursor: pointer; font-size: 15px; font-weight: 600; transition: all 0.15s; }
+  .tab:hover { border-color: var(--indigo); color: var(--text-white); }
+  .tab.active { border-color: var(--cyan); color: var(--cyan); }
+  .page { display: none; max-width: 860px; }
+  .page.active { display: block; animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  /* Path filter */
+  .path-filter { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+  .path-btn { background: var(--card); border: 1px solid var(--card-border); color: var(--text-dim); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.15s; }
+  .path-btn:hover { border-color: var(--indigo); color: var(--text); }
+  .path-btn.active { border-color: var(--folly); color: var(--folly); background: rgba(255,10,69,0.08); }
+  .path-label { color: var(--text-dim); font-size: 13px; margin-right: 8px; line-height: 36px; }
+  /* Sections */
+  .section { background: var(--card); border: 1px solid var(--card-border); border-radius: 14px; padding: 24px; margin-bottom: 16px; }
+  .section h2 { color: var(--text-white); font-size: 18px; margin-bottom: 12px; }
+  .section h3 { color: var(--text-white); font-size: 16px; margin-bottom: 8px; }
+  .section p, .section li { font-size: 15px; line-height: 1.7; }
+  .section ul, .section ol { padding-left: 20px; margin-top: 6px; }
+  .section li { margin-bottom: 4px; }
+  .name-format { background: var(--input-bg); border-radius: 10px; padding: 16px 20px; margin: 12px 0; font-family: 'SF Mono','Fira Code',monospace; font-size: 15px; color: var(--cyan); line-height: 1.6; white-space: pre-line; }
+  .field-table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  .field-table th { text-align: left; color: var(--folly); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; padding: 8px 12px; border-bottom: 1px solid var(--card-border); }
+  .field-table td { padding: 10px 12px; font-size: 14px; border-bottom: 1px solid var(--card-border); vertical-align: top; }
+  .field-table td:first-child { color: var(--cyan); font-weight: 600; white-space: nowrap; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 6px; margin-right: 4px; }
+  .tag-ct { background: rgba(108,92,231,0.2); color: var(--lavender); }
+  .tag-sc { background: rgba(0,255,136,0.12); color: var(--green); }
+  .tag-at { background: rgba(0,253,255,0.12); color: var(--cyan); }
+  .tag-na { background: rgba(251,191,36,0.15); color: var(--amber); }
+  .callout { border-radius: 10px; padding: 16px 20px; margin: 14px 0; font-size: 14px; line-height: 1.7; }
+  .callout-warn { background: rgba(255,10,69,0.08); border: 1px solid rgba(255,10,69,0.25); }
+  .callout-rule { background: rgba(0,253,255,0.06); border: 1px solid rgba(0,253,255,0.2); }
+  .callout-tip { background: rgba(0,255,136,0.06); border: 1px solid rgba(0,255,136,0.2); }
+  .callout-title { font-weight: 700; margin-bottom: 6px; }
+  .callout-warn .callout-title { color: var(--folly); }
+  .callout-rule .callout-title { color: var(--cyan); }
+  .callout-tip .callout-title { color: var(--green); }
+  .callout ul { padding-left: 20px; margin-top: 6px; }
+  .callout li { margin-bottom: 4px; }
+  .example { background: var(--example-bg); border: 1px solid var(--example-border); border-radius: 10px; padding: 14px 18px; margin: 10px 0; font-family: 'SF Mono','Fira Code',monospace; font-size: 13px; color: var(--text); line-height: 1.8; white-space: pre-line; }
+  .hl { color: var(--cyan); }
+  .sel-step { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
+  .sel-num { background: var(--folly); color: #fff; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+  .sel-text { font-size: 15px; line-height: 1.6; }
+  .sel-text strong { color: var(--text-white); }
+  .sheet-link { display: inline-block; margin-top: 8px; color: var(--lavender); font-size: 14px; text-decoration: underline; }
+  .path-content { display: none; }
+  .path-content.visible { display: block; }
+  .gated { display: none; }
+  .gated.visible { display: block; }
+  /* Builder */
+  .builder { background: var(--card); border: 1px solid rgba(0,253,255,0.25); border-radius: 14px; padding: 24px; margin-bottom: 16px; }
+  .builder h2 { color: var(--cyan); font-size: 18px; margin-bottom: 16px; }
+  .builder-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .builder-field { display: flex; flex-direction: column; gap: 4px; }
+  .builder-field.full { grid-column: 1 / -1; }
+  .builder-field label { color: var(--text-dim); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .builder-field input, .builder-field select { background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 8px; padding: 10px 14px; color: var(--text-white); font-size: 14px; font-family: inherit; outline: none; transition: border-color 0.15s; }
+  .builder-field input:focus, .builder-field select:focus { border-color: var(--indigo); }
+  .builder-field input::placeholder { color: #555; }
+  [data-theme="light"] .builder-field input::placeholder { color: #AAA; }
+  .builder-field input.locked { background: rgba(108,92,231,0.08); color: var(--indigo); border-color: rgba(108,92,231,0.15); cursor: not-allowed; }
+  .builder-field select { cursor: pointer; }
+  .builder-output { margin-top: 16px; }
+  .builder-output label { color: var(--text-dim); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px; }
+  .builder-result { display: flex; align-items: center; gap: 10px; }
+  .builder-result-text { flex: 1; background: var(--input-bg); border: 1px solid rgba(0,253,255,0.3); border-radius: 8px; padding: 12px 16px; font-family: 'SF Mono','Fira Code',monospace; font-size: 14px; color: var(--cyan); min-height: 44px; word-break: break-all; }
+  .copy-btn { background: rgba(0,253,255,0.1); border: 1px solid rgba(0,253,255,0.3); color: var(--cyan); padding: 10px 18px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.15s; white-space: nowrap; }
+  .copy-btn:hover:not(.disabled) { background: rgba(0,253,255,0.2); }
+  .copy-btn.copied { background: rgba(0,255,136,0.15); border-color: var(--green); color: var(--green); }
+  .copy-btn.disabled { opacity: 0.3; cursor: not-allowed; }
+  /* Quiz */
+  .quiz-score { background: var(--card); border: 1px solid rgba(0,253,255,0.3); border-radius: 14px; padding: 18px 24px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; }
+  .quiz-score span { color: var(--cyan); font-size: 28px; font-weight: 700; }
+  .quiz-score label { color: var(--text-dim); font-size: 14px; }
+  .quiz-q { background: var(--card); border: 1px solid var(--card-border); border-radius: 14px; padding: 24px; margin-bottom: 16px; }
+  .quiz-q h3 { color: var(--text-white); font-size: 16px; margin-bottom: 6px; }
+  .quiz-q .scenario { color: var(--text-dim); font-size: 14px; margin-bottom: 14px; line-height: 1.7; }
+  .quiz-opts { display: flex; flex-direction: column; gap: 8px; }
+  .quiz-opt { background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 10px; padding: 12px 16px; cursor: pointer; font-size: 14px; font-family: 'SF Mono','Fira Code',monospace; color: var(--text); transition: all 0.15s; }
+  .quiz-opt:hover { border-color: var(--indigo); }
+  .quiz-opt.correct { border-color: var(--green); background: rgba(0,255,136,0.08); color: var(--green); pointer-events: none; }
+  .quiz-opt.wrong { border-color: var(--folly); background: rgba(255,10,69,0.08); color: var(--folly); pointer-events: none; }
+  .quiz-opt.dim { opacity: 0.4; pointer-events: none; }
+  .quiz-explain { display: none; margin-top: 14px; padding: 14px; background: rgba(0,253,255,0.06); border-radius: 10px; font-size: 14px; line-height: 1.7; }
+  .quiz-explain.visible { display: block; }
+  .quiz-tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; margin-left: 8px; background: rgba(108,92,231,0.2); color: var(--lavender); }
+</style>
+</head>
+<body>
+<div class="header">
+  <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iTGF5ZXJfMSIgZGF0YS1uYW1lPSJMYXllciAxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1ODcuOTQgNDIxLjMzIj4KICA8ZGVmcz4KICAgIDxzdHlsZT4KICAgICAgLmNscy0xIHsKICAgICAgICBmaWxsOiAjZmQwMTNkOwogICAgICB9CiAgICA8L3N0eWxlPgogIDwvZGVmcz4KICA8cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik01NDAuMDMsMjE4Ljk5bC0xMS41NC04LjA1YzUuNy0xMC45Nyw4Ljk3LTIzLjQsOC45Ny0zNi42MiwwLTI2LjIxLTEyLjktNTAuNzMtMzQuNDktNjUuNTlMMzY1LjgxLDE0LjM4Yy0xMy40MS05LjM2LTI5LjM2LTE0LjM4LTQ1LjcyLTE0LjM4SDgwLjgzQzM2LjczLDAsLjk4LDM1Ljc1Ljk4LDc5Ljg0bC4wMiwzNDEuNDljMCwuMzcsNDc1LjE4LjY3LDQ3NS4xOC42NywxMDkuMTMsMCwxNTMuMzMtMTQwLjU0LDYzLjg0LTIwMy4wMVpNMTIxLjU1LDEzNy4wOGMwLTQyLjQxLDM0LjU0LTc2LjgsNzcuMTQtNzYuOGgxMDIuNjdsMTczLjUsMTIwLjU3aC0xMjAuNjVsLTEzNC05My40MXY5My40MWgtOTguNjZ2LTQzLjc3Wk00NzguNzgsMjg0LjQ0YzAsNDIuNjctMzQuNzUsNzcuMjctNzcuNjEsNzcuMjdoLTEwNi4xMmwtMTczLjUtMTIwLjU3aDEyMS4zOWwxMzMuNzYsOTMuMjV2LTkzLjI1aDEwMi4wOXY0My4zWiIvPgo8L3N2Zz4=" alt="BAVS" id="logo-img">
+  <h1>Campaign Builder</h1>
+  <button class="theme-toggle" onclick="toggleTheme()">Light Mode</button>
+</div>
+<p class="subtitle">Everything you need to build, name, and place ads in Meta Ads Manager.</p>
+<div class="tabs">
+  <div class="tabs-left">
+    <div class="tab active" onclick="switchTab('campaigns')">Campaigns</div>
+    <div class="tab" onclick="switchTab('adsets')">Ad Sets</div>
+    <div class="tab" onclick="switchTab('ads')">Ads</div>
+  </div>
+  <div class="tabs-right">
+    <div class="tab" onclick="switchTab('practice')">Practice</div>
+  </div>
+</div>
+
+<!-- ==================== CAMPAIGNS ==================== -->
+<div id="page-campaigns" class="page active">
+  <div class="path-filter">
+    <span class="path-label">I'm doing:</span>
+    <div class="path-btn" onclick="filterPath('ct',this)"><span class="tag tag-ct">CT</span> Creative Test</div>
+    <div class="path-btn" onclick="filterPath('sc',this)"><span class="tag tag-sc">SC</span> Scale</div>
+    <div class="path-btn" onclick="filterPath('at',this)"><span class="tag tag-at">AT</span> Audience Test</div>
+    <div class="path-btn" onclick="filterPath('na',this)"><span class="tag tag-na">NA</span> New Account</div>
+  </div>
+
+  <!-- Path-specific at top -->
+  <div class="section path-content visible" data-path="ct">
+    <h2><span class="tag tag-ct">CT</span> Creative Test Campaign</h2>
+    <ul><li>Budget: <strong>ABO</strong></li><li>Event: usually <strong>PUR</strong></li><li>Find the most recent CREATIVE TEST campaign, or create a new one</li></ul>
+    <div class="example">[BAVS] CV || 07 || PUR || ABO || CREATIVE TEST
+[BAVS] CV || IWR || 04 || PUR || ABO || CREATIVE TEST  (RHI)</div>
+  </div>
+  <div class="section path-content visible" data-path="sc">
+    <h2><span class="tag tag-sc">SC</span> Scale Campaign</h2>
+    <ul><li>Budget: <strong>CBO</strong></li><li>Find the most recent SCALE campaign, or create a new one</li></ul>
+    <div class="example">[BAVS] CV || 06 || PUR || CBO || SCALE</div>
+  </div>
+  <div class="section path-content visible" data-path="at">
+    <h2><span class="tag tag-at">AT</span> Audience Test Campaign</h2>
+    <ul><li>Budget: <strong>ABO</strong>, minimum $20 per ad set</li><li>Find the most recent AUDIENCE TEST campaign, or create a new one</li></ul>
+    <div class="example">[BAVS] CV || 05 || PUR || ABO || AUDIENCE TEST</div>
+  </div>
+  <div class="section path-content visible" data-path="na">
+    <h2><span class="tag tag-na">NA</span> New Account Campaign</h2>
+    <ul><li>Budget: <strong>ABO</strong>, minimum $20 per ad set</li><li>Start as AUDIENCE TEST - find what works first, then branch into other paths</li></ul>
+    <div class="example">[BAVS] CV || 01 || PUR || ABO || AUDIENCE TEST</div>
+  </div>
+
+  <!-- Builder -->
+  <div class="builder gated" id="c-builder">
+    <h2>Build Campaign Name</h2>
+    <div class="builder-grid">
+      <div class="builder-field"><label>Prefix</label><input type="text" value="[BAVS]" class="locked" readonly></div>
+      <div class="builder-field"><label>Objective</label><select id="c-obj" onchange="buildCampaign()"><option value="">-- select --</option><option value="CV">CV (conversion/sales)</option><option value="AW">AW (awareness)</option><option value="EN">EN (engagement)</option><option value="LD">LD (lead gen)</option></select></div>
+      <div class="builder-field"><label>Product (optional)</label><input type="text" id="c-product" placeholder="e.g. IWR, MCO (leave blank to skip)" oninput="buildCampaign()"></div>
+      <div class="builder-field"><label>Series #</label><input type="text" id="c-series" placeholder="e.g. 01, 07, 12" oninput="buildCampaign()"></div>
+      <div class="builder-field"><label>Event</label><select id="c-event" onchange="buildCampaign()"><option value="">-- select --</option><option value="PUR">PUR (purchase)</option><option value="ATC">ATC (add to cart)</option><option value="CLK">CLK (link click)</option><option value="LC">LC (lead complete)</option><option value="VW">VW (video view)</option></select></div>
+      <div class="builder-field"><label>Budget</label><select id="c-budget" onchange="buildCampaign()"><option value="">-- select --</option><option value="ABO">ABO (ad set budget)</option><option value="CBO">CBO (campaign budget)</option></select></div>
+      <div class="builder-field full"><label>Agenda</label><input type="text" id="c-agenda" class="locked" readonly></div>
+    </div>
+    <div class="builder-output"><label>Final Output</label><div class="builder-result"><div class="builder-result-text" id="c-output">[BAVS] ...</div><button class="copy-btn disabled" onclick="copyName('c-output',this)">Copy</button></div></div>
+  </div>
+
+  <!-- Reference sections -->
+  <div class="section gated" id="c-ref-naming">
+    <h2>Campaign Name Format</h2>
+    <div class="name-format">[BAVS] {OBJECTIVE} || {PRODUCT} || {SERIES} || {EVENT} || {BUDGET} || {AGENDA}</div>
+    <p>Leave Product blank for clients with one product (the name will have 5 pipes instead of 6). <code>[BAVS]</code> is always first.</p>
+    <table class="field-table">
+      <tr><th>Field</th><th>What it is</th><th>Values</th></tr>
+      <tr><td>[BAVS]</td><td>Agency prefix. Always there.</td><td><code>[BAVS]</code></td></tr>
+      <tr><td>OBJECTIVE</td><td>Meta campaign objective</td><td><code>CV</code> conversion/sales, <code>AW</code> awareness, <code>EN</code> engagement, <code>LD</code> lead gen</td></tr>
+      <tr><td>PRODUCT</td><td>Product code. Only needed when a client has very different products (like RHI).</td><td><code>IWR</code>, <code>MCO</code>, <code>3WM</code>, <code>ALL</code>. Leave blank for clients with one product.</td></tr>
+      <tr><td>SERIES</td><td>Goes up by 1 every time a new campaign is created for this objective + product.</td><td><code>01</code>, <code>02</code>, <code>03</code>...</td></tr>
+      <tr><td>EVENT</td><td>The optimization event selected in Meta</td><td><code>PUR</code> purchase, <code>ATC</code> add to cart, <code>CLK</code> link click, <code>LC</code> lead, <code>VW</code> video view</td></tr>
+      <tr><td>BUDGET</td><td>Budget type</td><td><code>CBO</code> campaign budget (Meta distributes), <code>ABO</code> ad set budget (you control each)</td></tr>
+      <tr><td>AGENDA</td><td>The purpose of this campaign in 1-2 words.</td><td><code>SCALE</code>, <code>CREATIVE TEST</code>, <code>AUDIENCE TEST</code>, <code>LP TEST</code></td></tr>
+    </table>
+    <a class="sheet-link" href="https://docs.google.com/spreadsheets/d/1FNSu1EV_HjkUt9banp59BKy9hqXR_BfTIqYn3hmgsDE/edit?gid=304158503#gid=304158503" target="_blank">Open naming sheet</a>
+  </div>
+
+  <div class="section gated" id="c-ref-cbo">
+    <h2>CBO vs ABO - When to use which</h2>
+    <table class="field-table">
+      <tr><th>Type</th><th>When</th><th>Why</th></tr>
+      <tr><td>ABO</td><td><span class="tag tag-ct">CT</span> <span class="tag tag-at">AT</span> <span class="tag tag-na">NA</span> Testing (most of the time)</td><td>You control the budget for each ad set separately. Every test gets a fair chance.</td></tr>
+      <tr><td>CBO</td><td><span class="tag tag-sc">SC</span> Scaling winners</td><td>Meta automatically sends more budget to the best-performing ad sets. Use this when you already know what works.</td></tr>
+      <tr><td>CBO</td><td>Large budget testing (rare)</td><td>Sometimes with big budgets, CBO works for testing too. Juan will tell you when.</td></tr>
+    </table>
+    <p style="margin-top:10px"><strong style="color:var(--text-white)">Not sure?</strong> Use ABO. You can always move winners into a CBO SCALE campaign later.</p>
+  </div>
+
+  <div class="section gated" id="c-ref-find">
+    <h2>How to Find the Right Campaign</h2>
+    <p style="margin-bottom:16px">Before creating a new campaign, check if the right one already exists. Look for these three things in order:</p>
+    <div class="sel-step"><div class="sel-num">1</div><div class="sel-text"><strong>Objective</strong> - CV for sales (most common), LD for leads, AW for awareness</div></div>
+    <div class="sel-step"><div class="sel-num">2</div><div class="sel-text"><strong>Agenda</strong> - CREATIVE TEST, SCALE, AUDIENCE TEST, etc.</div></div>
+    <div class="sel-step"><div class="sel-num">3</div><div class="sel-text"><strong>Highest series number</strong> - that's the most recent campaign</div></div>
+    <div class="callout callout-rule">
+      <div class="callout-title">Example</div>You have new creatives for a sales campaign. Which campaign do you use?
+      <div class="example">A. [BAVS] CV || 03 || PUR || ABO || CREATIVE TEST
+B. [BAVS] CV || 07 || PUR || ABO || CREATIVE TEST  <span class="hl">&larr; this one</span>
+C. [BAVS] CV || 09 || PUR || CBO || SCALE
+D. [BAVS] LD || 12 || WEB || CBO || CREATIVE TEST</div>
+      <strong>B</strong> - It's CV (sales) + CREATIVE TEST + highest series number (07). C is wrong because it's SCALE. D is wrong because it's LD (lead gen). A is older (series 03).
+    </div>
+    <div class="callout callout-tip"><div class="callout-title">Can't find a match?</div>Create a new campaign. Use the next series number after the highest one that exists.</div>
+  </div>
+
+  <div class="callout callout-warn gated" id="c-ref-donts">
+    <div class="callout-title">Don't</div>
+    <ul><li>Put new creatives in a SCALE campaign</li><li>Use CBO for testing (unless Juan says to)</li><li>Reuse a series number - always go up by 1</li><li>Pick a campaign just because one word matches - check objective AND agenda AND series number</li></ul>
+  </div>
+</div>
+
+<!-- ==================== AD SETS ==================== -->
+<div id="page-adsets" class="page">
+  <div class="path-filter">
+    <span class="path-label">I'm doing:</span>
+    <div class="path-btn" onclick="filterPath('ct',this)"><span class="tag tag-ct">CT</span> Creative Test</div>
+    <div class="path-btn" onclick="filterPath('sc',this)"><span class="tag tag-sc">SC</span> Scale</div>
+    <div class="path-btn" onclick="filterPath('at',this)"><span class="tag tag-at">AT</span> Audience Test</div>
+    <div class="path-btn" onclick="filterPath('na',this)"><span class="tag tag-na">NA</span> New Account</div>
+  </div>
+
+  <!-- Path-specific at top -->
+  <div class="section path-content visible" data-path="ct">
+    <h2><span class="tag tag-ct">CT</span> Creative Test Ad Sets</h2>
+    <ul><li>Series = <strong>YMMC</strong> matching the creative batch (e.g. <code>603A</code>)</li><li>Interest = <strong>BROAD</strong>. Always. We're testing the creative, not the audience.</li><li>One ad set per concept. <code>603A</code> and <code>603B</code> go in separate ad sets.</li></ul>
+    <div class="example">603A || IMG || US || BROAD
+603B || UGC || US || BROAD</div>
+  </div>
+  <div class="section path-content visible" data-path="sc">
+    <h2><span class="tag tag-sc">SC</span> Scale Ad Sets</h2>
+    <ul><li>Series = <strong>AUD</strong></li><li>Use the targeting that was already working from the winning test</li><li><strong>Never</strong> increase budget on the winning test ad set - create a new one here instead</li></ul>
+    <div class="example">AUD || IMG || US || BROAD
+AUD || IMG || US || BROAD || MAX CV</div>
+  </div>
+  <div class="section path-content visible" data-path="at">
+    <h2><span class="tag tag-at">AT</span> Audience Test Ad Sets</h2>
+    <ul><li>Series = <strong>AUD</strong> for all</li><li>Create <strong>multiple</strong> ad sets, each with different targeting</li><li>Keep the creative type and location the same across all. Only change the targeting.</li><li>Minimum $20 per ad set</li></ul>
+    <div class="example">AUD || IMG || US || BROAD
+AUD || IMG || US || LAA STACK
+AUD || IMG || US || INT: COACHING
+AUD || IMG || US || RETARGET</div>
+  </div>
+  <div class="section path-content visible" data-path="na">
+    <h2><span class="tag tag-na">NA</span> New Account Ad Sets</h2>
+    <ul><li>Series = <strong>AUD</strong></li><li>Create 3-5 ad sets with different targeting. Start with BROAD.</li><li>Minimum $20 per ad set</li></ul>
+    <div class="example">AUD || IMG || BROAD
+AUD || IMG || LAA STACK
+AUD || IMG || INT: YOGA</div>
+  </div>
+
+  <!-- Builder -->
+  <div class="builder" id="as-builder">
+    <h2>Build Ad Set Name</h2>
+    <div class="builder-grid">
+      <div class="builder-field"><label>Product (optional)</label><input type="text" id="as-product" placeholder="e.g. IWR, MCO (leave blank to skip)" oninput="buildAdset()"></div>
+      <div class="builder-field"><label>Series</label><input type="text" id="as-series" placeholder="e.g. 603A, AUD, 507" oninput="buildAdset()"></div>
+      <div class="builder-field"><label>Creative Type</label><select id="as-type" onchange="buildAdset()"><option value="">-- select --</option><option value="IMG">IMG (static image)</option><option value="UGC">UGC (user-generated)</option><option value="EGC">EGC (expert-generated)</option><option value="VID">VID (video)</option><option value="CRL">CRL (carousel)</option><option value="MIX">MIX (mixed formats)</option></select></div>
+      <div class="builder-field"><label>Location (optional)</label><input type="text" id="as-location" placeholder="e.g. US, US UK AU" oninput="buildAdset()"></div>
+      <div class="builder-field"><label>Interest</label><input type="text" id="as-interest" placeholder="e.g. BROAD, LAA STACK, INT: YOGA" oninput="buildAdset()"></div>
+      <div class="builder-field"><label>Demographic (optional)</label><input type="text" id="as-demo" placeholder="e.g. F 30-45, M, 25+" oninput="buildAdset()"></div>
+      <div class="builder-field"><label>Asset Group Title (optional)</label><input type="text" id="as-asset" placeholder="e.g. Wool Collection" oninput="buildAdset()"></div>
+      <div class="builder-field"><label>Landing Page (optional)</label><input type="text" id="as-lp" placeholder="e.g. LP: QUIZ, LP: HOME" oninput="buildAdset()"></div>
+    </div>
+    <div class="builder-output"><label>Final Output</label><div class="builder-result"><div class="builder-result-text" id="as-output">...</div><button class="copy-btn disabled" onclick="copyName('as-output',this)">Copy</button></div></div>
+  </div>
+
+  <!-- Reference -->
+  <div class="section">
+    <h2>Ad Set Name Format</h2>
+    <p style="margin-bottom:8px">Only filled-in fields appear in the name. If a field is blank, it's skipped entirely - no empty pipes.</p>
+    <div class="name-format">{PRODUCT} || {SERIES} || {CREATIVE TYPE} || {LOCATION} || {INTEREST} || {DEMOGRAPHIC} || {ASSET GROUP} || {LP} || {AD TEST}</div>
+    <table class="field-table">
+      <tr><th>Field</th><th>What it is</th><th>Values</th></tr>
+      <tr><td>PRODUCT</td><td>Only needed for clients with very different products</td><td><code>IWR</code>, <code>MCO</code>, <code>3WM</code>, <code>HDA</code>. Leave blank for clients with one product.</td></tr>
+      <tr><td>SERIES</td><td>Which creative batch or purpose this ad set is for</td><td><code>YMMC</code> for creative testing (e.g. <code>603A</code>), <code>AUD</code> for scaling/audience testing</td></tr>
+      <tr><td>CREATIVE TYPE</td><td>The format of ads in this ad set. <strong>Only these values:</strong></td><td><code>IMG</code> <code>UGC</code> <code>EGC</code> <code>VID</code> <code>CRL</code> (carousel) <code>MIX</code></td></tr>
+      <tr><td>LOCATION</td><td>Where you're targeting. Write whatever is clear.</td><td><code>US</code>, <code>US UK AU</code>, <code>VIC QLD</code>, <code>TOP 5 STATES</code></td></tr>
+      <tr><td>INTEREST</td><td>How you're targeting the audience</td><td><code>BROAD</code>, <code>LAA</code>, <code>LAA STACK</code>, <code>INT: X</code>, <code>RETARGET</code>, <code>ADV</code></td></tr>
+      <tr><td>DEMOGRAPHIC</td><td>Gender/age. Leave blank when it's obvious (e.g. don't put F for a brand that only targets women).</td><td><code>F</code>, <code>M</code>, <code>F 30-45</code>, <code>25+</code></td></tr>
+      <tr><td>ASSET GROUP</td><td>Optional short label to describe what's in this ad set</td><td><code>Wool Collection</code>, <code>AGC</code>, <code>Courtney Reaction</code></td></tr>
+      <tr><td>LP</td><td>Landing page. Only use when testing different pages.</td><td><code>LP: PP</code> (product page), <code>LP: HP</code> (home), <code>LP: QUIZ</code></td></tr>
+      <tr><td>AD TEST</td><td>What you're testing in this ad set</td><td><code>COPY TEST</code>, <code>HOOK TEST</code>, <code>AUDIENCE TEST</code></td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>Series - The Most Important Field</h2>
+    <p style="margin-bottom:16px">Series tells you what this ad set is for and which ads belong in it.</p>
+    <h3><span class="tag tag-ct">CT</span> YMMC - Creative Testing</h3>
+    <p><code>Y</code> = last digit of year, <code>MM</code> = month, <code>C</code> = concept letter</p>
+    <div class="example"><span class="hl">6</span> = 2026  <span class="hl">03</span> = March  <span class="hl">A</span> = concept A
+603A = 2026 March concept A
+507H = 2025 July concept H</div>
+    <p style="margin-top:8px">A YMMC ad set <strong>must only contain</strong> ads from that exact batch. <code>603A</code> ad set = <code>603A_01</code>, <code>603A_02</code>, <code>603A_03</code>.</p>
+    <h3 style="margin-top:20px"><span class="tag tag-sc">SC</span> <span class="tag tag-at">AT</span> <span class="tag tag-na">NA</span> AUD - Audience / Scaling</h3>
+    <p>Just the letters <code>AUD</code>. Used for scaling winners or testing audiences. You can put any proven ads in here - best performers from any month, any concept.</p>
+  </div>
+
+  <div class="section">
+    <h2>Always Create New Ad Sets</h2>
+    <p><strong>Never add new ads to an existing ad set.</strong> Every new batch of creatives or new audience test = a fresh new ad set. This keeps the data clean and avoids resetting the learning phase.</p>
+  </div>
+
+  <div class="callout callout-warn">
+    <div class="callout-title">Don't</div>
+    <ul><li>Add new creatives to an existing ad set</li><li>Increase budget on a winning test ad set (this resets learning - create a new one in SCALE instead)</li><li>Use anything other than BROAD targeting for creative tests</li><li>Use creative types outside of IMG / UGC / EGC / VID / CRL / MIX</li></ul>
+  </div>
+</div>
+
+<!-- ==================== ADS ==================== -->
+<div id="page-ads" class="page">
+  <div class="path-filter">
+    <span class="path-label">I'm doing:</span>
+    <div class="path-btn" onclick="filterPath('ct',this)"><span class="tag tag-ct">CT</span> Creative Test</div>
+    <div class="path-btn" onclick="filterPath('sc',this)"><span class="tag tag-sc">SC</span> Scale</div>
+    <div class="path-btn" onclick="filterPath('at',this)"><span class="tag tag-at">AT</span> Audience Test</div>
+    <div class="path-btn" onclick="filterPath('na',this)"><span class="tag tag-na">NA</span> New Account</div>
+  </div>
+
+  <div class="callout callout-warn" style="margin-bottom:16px"><div class="callout-title">Minimum 3 ads per ad set. Always. No exceptions.</div>Meta needs at least 3 options to optimize delivery. If you have fewer than 3, flag it.</div>
+
+  <!-- Path-specific at top -->
+  <div class="section path-content visible" data-path="ct">
+    <h2><span class="tag tag-ct">CT</span> Creative Test Ads</h2>
+    <ul><li>Upload from the <strong>matching YMMC batch only</strong></li><li><code>603A</code> ad set = <code>603A_01</code>, <code>603A_02</code>, <code>603A_03</code></li><li>Do not mix concepts. No 603B files in a 603A ad set.</li><li>Upload the files directly (fresh upload, no post ID)</li><li>If the concept has fewer than 3 variations, flag it.</li></ul>
+  </div>
+  <div class="section path-content visible" data-path="sc">
+    <h2><span class="tag tag-sc">SC</span> Scale Ads</h2>
+    <ul><li>Pick the best performers from <strong>any month, any concept</strong></li><li><strong>Always use post ID</strong> - never re-upload the same creative</li><li>Choose at least 3 proven winners</li></ul>
+  </div>
+  <div class="section path-content visible" data-path="at">
+    <h2><span class="tag tag-at">AT</span> Audience Test Ads</h2>
+    <ul><li><strong>Same ads in every ad set</strong> - the creative stays the same, only the audience changes</li><li><strong>Always use post ID</strong></li><li>If you put different ads in different ad sets, you can't tell whether the audience or the creative caused the result</li></ul>
+  </div>
+  <div class="section path-content visible" data-path="na">
+    <h2><span class="tag tag-na">NA</span> New Account Ads</h2>
+    <ul><li><strong>Mix concepts together</strong> - this is the one exception. We don't know what works yet.</li><li>Combine <code>603A</code> + <code>603B</code> + <code>603C</code> ads in the same ad set</li><li>Upload the files directly (no post IDs exist yet)</li><li>Minimum 3 ads per ad set</li></ul>
+  </div>
+
+  <!-- Reference -->
+  <div class="section">
+    <h2>Understanding Creative File Names</h2>
+    <p style="margin-bottom:12px">When Raka delivers creative files to Google Drive, the file names follow this pattern:</p>
+    <div class="name-format">{Y}{MM}{C}_{VARIATION}_{FORMAT}_{TITLE}-{RATIO}.ext</div>
+    <div class="example"><span class="hl">6</span><span class="hl">03</span><span class="hl">A</span>_<span class="hl">01</span>_<span class="hl">IMG</span>_<span class="hl">Skincare Undone</span><span class="hl">-S</span>.png
+
+6    = 2026
+03   = March
+A    = concept A
+01   = variation 1
+IMG  = static image
+-S   = story format (9:16)
+-F   = feed format (1:1 or 4:5)</div>
+    <p style="margin-top:10px">The <strong>YMMC</strong> part of the filename matches the ad set series. A file called <code>603A_01</code> goes in the ad set named <code>603A</code>.</p>
+  </div>
+
+  <div class="section">
+    <h2>Post ID - Reusing Existing Ads</h2>
+    <p>When scaling or audience testing, you don't upload the creative again. Instead, you reuse the existing ad through its <strong>post ID</strong>. This keeps all the likes, comments, and shares (social proof) from the original ad.</p>
+    <h3 style="margin-top:16px">How to get a post ID:</h3>
+    <ol><li>Go to the winning ad in Ads Manager</li><li>Click the preview or "See Post with Comments"</li><li>Copy the ID from the URL</li><li>When creating a new ad, select "Use existing post" and paste the ID</li></ol>
+    <table class="field-table" style="margin-top:16px">
+      <tr><th>Path</th><th>How to add ads</th></tr>
+      <tr><td><span class="tag tag-ct">CT</span> Creative Test</td><td><strong>Upload the files directly</strong> - these are new creatives</td></tr>
+      <tr><td><span class="tag tag-sc">SC</span> Scale</td><td><strong>Use post ID</strong> - always. Keeps the social proof.</td></tr>
+      <tr><td><span class="tag tag-at">AT</span> Audience Test</td><td><strong>Use post ID</strong> - always. Same ads in every ad set.</td></tr>
+      <tr><td><span class="tag tag-na">NA</span> New Account</td><td><strong>Upload the files directly</strong> - no existing ads to reuse yet.</td></tr>
+    </table>
+  </div>
+
+  <div class="callout callout-warn">
+    <div class="callout-title">Don't</div>
+    <ul><li>Re-upload a creative when scaling (you lose all the likes and comments)</li><li>Mix concepts in a creative test ad set</li><li>Put different ads in different ad sets during an audience test</li><li>Use fewer than 3 ads in any ad set</li></ul>
+  </div>
+</div>
+
+<!-- ==================== PRACTICE ==================== -->
+<div id="page-practice" class="page">
+  <div class="quiz-score"><span id="score">0</span><label>/ 8 correct</label></div>
+  <div class="quiz-q"><h3>Q1: Pick the right campaign <span class="quiz-tag">Campaign</span></h3><p class="scenario">New IMG creatives arrived for a sales campaign. Which campaign?</p><div class="quiz-opts"><div class="quiz-opt" onclick="answer(this,false,1)">[BAVS] CV || 03 || PUR || ABO || CREATIVE TEST</div><div class="quiz-opt" onclick="answer(this,true,1)">[BAVS] CV || 07 || PUR || ABO || CREATIVE TEST</div><div class="quiz-opt" onclick="answer(this,false,1)">[BAVS] CV || 09 || PUR || CBO || SCALE</div><div class="quiz-opt" onclick="answer(this,false,1)">[BAVS] LD || 12 || WEB || CBO || CREATIVE TEST</div></div><div class="quiz-explain" id="explain-1"><strong>B.</strong> CV (sales) + CREATIVE TEST + highest series (07). C is SCALE. D is LD (lead gen). A is older.</div></div>
+  <div class="quiz-q"><h3>Q2: Budget type <span class="quiz-tag">Campaign</span></h3><p class="scenario">New campaign to test 3 concepts. CBO or ABO?</p><div class="quiz-opts"><div class="quiz-opt" onclick="answer(this,true,2)">ABO - each ad set gets its own budget</div><div class="quiz-opt" onclick="answer(this,false,2)">CBO - let Meta distribute</div></div><div class="quiz-explain" id="explain-2"><strong>ABO.</strong> Testing = ABO so every concept gets a fair chance.</div></div>
+  <div class="quiz-q"><h3>Q3: Name the ad set <span class="quiz-tag">Ad Set</span></h3><p class="scenario">Testing concept B, March 2026, static images, US. Ad set name?</p><div class="quiz-opts"><div class="quiz-opt" onclick="answer(this,false,3)">AUD || IMG || US || BROAD</div><div class="quiz-opt" onclick="answer(this,true,3)">603B || IMG || US || BROAD</div><div class="quiz-opt" onclick="answer(this,false,3)">603B || IMG || US || LAA STACK</div><div class="quiz-opt" onclick="answer(this,false,3)">03B || IMG || US || BROAD</div></div><div class="quiz-explain" id="explain-3"><strong>603B</strong> = 6 (2026) + 03 (March) + B. Creative tests are always BROAD. AUD is for scaling. 03B is missing the year digit.</div></div>
+  <div class="quiz-q"><h3>Q4: Which ads belong? <span class="quiz-tag">Ads</span></h3><p class="scenario">Which files go in a <code>603B</code> ad set?</p><div class="quiz-opts"><div class="quiz-opt" onclick="answer(this,false,4)">603A_01, 603B_01, 603C_01</div><div class="quiz-opt" onclick="answer(this,false,4)">603B_01, 603B_02</div><div class="quiz-opt" onclick="answer(this,true,4)">603B_01, 603B_02, 603B_03</div><div class="quiz-opt" onclick="answer(this,false,4)">Any 3 best performers via post ID</div></div><div class="quiz-explain" id="explain-4"><strong>603B only, minimum 3.</strong> No mixing concepts. Two isn't enough (need 3). Post IDs are for AUD ad sets.</div></div>
+  <div class="quiz-q"><h3>Q5: Scaling a winner <span class="quiz-tag">Ads</span></h3><p class="scenario"><code>603A_02</code> is performing great. Juan says scale it. What do you do?</p><div class="quiz-opts"><div class="quiz-opt" onclick="answer(this,false,5)">Upload 603A_02 again into a new SCALE ad set</div><div class="quiz-opt" onclick="answer(this,false,5)">Increase budget on the original 603A ad set</div><div class="quiz-opt" onclick="answer(this,true,5)">New AUD ad set in SCALE campaign. Post ID for 603A_02 + 2 other winners.</div><div class="quiz-opt" onclick="answer(this,false,5)">Duplicate the 603A ad set into SCALE</div></div><div class="quiz-explain" id="explain-5"><strong>New AUD ad set + post IDs.</strong> Re-uploading loses the likes and comments. Increasing budget resets learning.</div></div>
+  <div class="quiz-q"><h3>Q6: Audience test ads <span class="quiz-tag">Ads</span></h3><p class="scenario">3 ad sets testing BROAD vs LAA vs RETARGET. What ads go in them?</p><div class="quiz-opts"><div class="quiz-opt" onclick="answer(this,false,6)">Different creatives in each to test everything</div><div class="quiz-opt" onclick="answer(this,true,6)">Same 3 proven ads (post ID) in all 3 ad sets</div><div class="quiz-opt" onclick="answer(this,false,6)">Upload new creatives</div><div class="quiz-opt" onclick="answer(this,false,6)">1 ad per ad set to keep it simple</div></div><div class="quiz-explain" id="explain-6"><strong>Same ads everywhere.</strong> The creative stays the same so you can see which audience performs best. Always post ID. Always minimum 3.</div></div>
+  <div class="quiz-q"><h3>Q7: New account <span class="quiz-tag">Campaign</span></h3><p class="scenario">Brand new client. Concepts A, B, C ready. What's the structure?</p><div class="quiz-opts"><div class="quiz-opt" onclick="answer(this,false,7)">3 CREATIVE TEST campaigns, one per concept</div><div class="quiz-opt" onclick="answer(this,false,7)">1 SCALE campaign, 1 AUD ad set, all 9 ads</div><div class="quiz-opt" onclick="answer(this,true,7)">1 AUDIENCE TEST campaign, 3-5 AUD ad sets, mix concepts</div><div class="quiz-opt" onclick="answer(this,false,7)">1 CREATIVE TEST, 3 ad sets (603A/B/C)</div></div><div class="quiz-explain" id="explain-7"><strong>New account = audience test first.</strong> Nothing is proven yet, so test different audiences with a mix of concepts.</div></div>
+  <div class="quiz-q"><h3>Q8: Decode the series <span class="quiz-tag">Ad Set</span></h3><p class="scenario">You see an ad set called <code>507H || VID || US || BROAD</code>. What does <code>507H</code> mean?</p><div class="quiz-opts"><div class="quiz-opt" onclick="answer(this,false,8)">Series 507, test H</div><div class="quiz-opt" onclick="answer(this,true,8)">2025, July, concept H - creative test</div><div class="quiz-opt" onclick="answer(this,false,8)">507 hours old, high priority</div><div class="quiz-opt" onclick="answer(this,false,8)">AUD ad set #507H for scaling</div></div><div class="quiz-explain" id="explain-8"><strong>5=2025, 07=July, H=concept H.</strong> The letter means it's a creative test (YMMC). It should contain 507H_01, 507H_02, 507H_03 ads.</div></div>
+</div>
+
+<script>
+let score = 0;
+function buildCampaign() {
+  const parts = ['[BAVS]'];
+  const v = id => { const e = document.getElementById(id); return e.tagName === 'SELECT' ? e.value : e.value.trim().toUpperCase(); };
+  if (v('c-obj')) parts.push(v('c-obj'));
+  if (v('c-product')) parts.push(v('c-product'));
+  if (v('c-series')) parts.push(v('c-series'));
+  if (v('c-event')) parts.push(v('c-event'));
+  if (v('c-budget')) parts.push(v('c-budget'));
+  if (v('c-agenda')) parts.push(v('c-agenda'));
+  const ready = v('c-obj') && v('c-series') && v('c-event') && v('c-budget') && v('c-agenda');
+  document.getElementById('c-output').textContent = parts.length > 1 ? parts.join(' || ') : '[BAVS] ...';
+  document.querySelector('#c-builder .copy-btn').classList.toggle('disabled', !ready);
+}
+function buildAdset() {
+  const parts = [];
+  ['as-product','as-series','as-type','as-location','as-interest','as-demo','as-asset','as-lp'].forEach(id => {
+    const e = document.getElementById(id);
+    const val = e.tagName === 'SELECT' ? e.value : e.value.trim();
+    if (val) parts.push(val.toUpperCase());
+  });
+  const series = document.getElementById('as-series').value.trim();
+  const type = document.getElementById('as-type').value;
+  const ready = series && type;
+  document.getElementById('as-output').textContent = parts.length ? parts.join(' || ') : '...';
+  document.querySelector('#as-builder .copy-btn').classList.toggle('disabled', !ready);
+}
+function copyName(id, btn) {
+  if (btn.classList.contains('disabled')) return;
+  const t = document.getElementById(id).textContent;
+  if (t === '[BAVS] ...' || t === '...') return;
+  navigator.clipboard.writeText(t);
+  btn.textContent = 'Copied!'; btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+}
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('page-' + tab).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+let activePath = null;
+function filterPath(path, btn) {
+  activePath = path;
+  // Apply across ALL tabs
+  document.querySelectorAll('.path-filter').forEach(filter => {
+    filter.querySelectorAll('.path-btn').forEach(b => {
+      b.classList.toggle('active', b.onclick.toString().includes("'" + path + "'"));
+    });
+  });
+  document.querySelectorAll('.page').forEach(page => {
+    page.querySelectorAll('.path-content').forEach(el => el.classList.toggle('visible', el.dataset.path === path));
+    page.querySelectorAll('.gated').forEach(el => el.classList.add('visible'));
+  });
+  // Auto-set agenda and budget on campaigns tab
+  const agendaMap = { ct: 'CREATIVE TEST', sc: 'SCALE', at: 'AUDIENCE TEST', na: 'AUDIENCE TEST' };
+  const budgetMap = { ct: 'ABO', sc: 'CBO', at: 'ABO', na: 'ABO' };
+  const agenda = document.getElementById('c-agenda');
+  const budget = document.getElementById('c-budget');
+  if (agenda && agendaMap[path]) { agenda.value = agendaMap[path]; buildCampaign(); }
+  if (budget && budgetMap[path]) { budget.value = budgetMap[path]; buildCampaign(); }
+  // Auto-set adset series: AUD for everything except creative test
+  const asSeries = document.getElementById('as-series');
+  if (asSeries) {
+    if (path === 'ct') {
+      asSeries.value = ''; asSeries.readOnly = false; asSeries.classList.remove('locked');
+      asSeries.placeholder = 'e.g. 603A, 507H';
+    } else {
+      asSeries.value = 'AUD'; asSeries.readOnly = true; asSeries.classList.add('locked');
+    }
+    buildAdset();
+  }
+}
+function answer(el, correct, q) {
+  el.closest('.quiz-opts').querySelectorAll('.quiz-opt').forEach(o => { if (o !== el) o.classList.add('dim'); o.style.pointerEvents = 'none'; });
+  el.classList.add(correct ? 'correct' : 'wrong');
+  if (correct) { score++; document.getElementById('score').textContent = score; }
+  document.getElementById('explain-' + q).classList.add('visible');
+}
+function toggleTheme() {
+  const b = document.body, btn = document.querySelector('.theme-toggle');
+  if (b.dataset.theme === 'light') {
+    b.removeAttribute('data-theme'); btn.textContent = 'Light Mode';
+  } else {
+    b.dataset.theme = 'light'; btn.textContent = 'Dark Mode';
+  }
+}
+</script>
+</body>
+</html>
